@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Threat Simulation</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <style>
+        html, body {
+            height: 100%;
+        }
+        body {
+            color: #444;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            line-height: 1.5;
+            background: #35346d url('{{ url_for('static', filename='bg.png') }}') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding-top: 32px;
+            opacity: 0.8;
+        }
+        h2.text-center {
+            color: #f5f5f5;
+            margin-bottom: 32px;
+            letter-spacing: 1px;
+            text-align: center;
+            font-weight: 700;
+        }
+        /* --- Fancy Slider --- */
+        .slider {
+            height: auto;
+            min-height: 480px;
+            padding-bottom: 1px;
+            max-width: 1000px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto 0 auto;
+            background: #23243a;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .slider__nav {
+            width: 12px;
+            height: 12px;
+            margin: 2rem 12px;
+            border-radius: 50%;
+            z-index: 10;
+            outline: 6px solid #ccc;
+            outline-offset: -6px;
+            box-shadow: 0 0 0 0 #333, 0 0 0 0 rgba(51, 51, 51, 0);
+            cursor: pointer;
+            appearance: none;
+            backface-visibility: hidden;
+            position: relative;
+        }
+        .slider__nav:checked {
+            animation: check 0.4s linear forwards;
+        }
+        .slider__nav:checked:nth-of-type(1) ~ .slider__inner { left: 0%; }
+        .slider__nav:checked:nth-of-type(2) ~ .slider__inner { left: -100%; }
+        .slider__nav:checked:nth-of-type(3) ~ .slider__inner { left: -200%; }
+        .slider__nav:checked:nth-of-type(4) ~ .slider__inner { left: -300%; }
+        .slider__inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 400%;
+            height: 100%;
+            transition: left 0.4s;
+            display: flex;
+            flex-flow: row nowrap;
+        }
+        .slider__contents {
+            min-height: 500px;
+            padding: 2rem 1rem 3.5rem 1rem;
+            text-align: center;
+            display: flex;
+            flex: 1;
+            flex-flow: column nowrap;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            box-sizing: border-box;
+            /* padding-bottom: 1rem; */
+        }
+        .slider__image {
+            font-size: 2.7rem;
+            color: #2196F3;
+            margin-bottom: 0.5rem;
+        }
+        .slider__caption {
+            font-weight: 500;
+            margin: 1.2rem 0 1rem;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            color: #3b82f6;
+            font-size: 1.4rem;
+        }
+        .slider__txt {
+            color: #bdbdbd;
+            margin-bottom: 2rem;
+            max-width: 440px;
+            font-size: 1.08rem;
+        }
+        /* Custom script buttons */
+        .slider__buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-top: 10px;
+            width: 100%;
+            align-items: center;
+        }
+        .slider__buttons button {
+            width: 320px;
+            max-width: 90vw;
+            font-size: 1.12rem;
+            padding: 14px 0;
+            border-radius: 8px;
+            border: none;
+            background: #35346d;
+            color: #fff;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+        }
+        .slider__buttons button.primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .slider__buttons button.secondary {
+            background: #5c5e7a;
+            color: #e0e0e0;
+        }
+        .slider__buttons button:hover {
+            transform: translateY(-2px) scale(1.03);
+            filter: brightness(1.1);
+        }
+        /* --- Terminal --- */
+        #terminal {
+            background-color: #181a20;
+            color: #39ff14;
+            padding: 0;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            border-radius: 18px;
+            margin: 40px auto 0 auto;
+            max-width: 1000px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            font-size: 1.08rem;
+            display: block;
+            border: 1.5px solid #23243a;
+            position: relative;
+            opacity: 0.8;
+        }
+        .terminal-mac-header {
+            display: flex;
+            align-items: center;
+            height: 38px;
+            background: #23243a;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            padding: 0 16px;
+            border-bottom: 1px solid #222;
+            opacity: 0.8;
+        }
+        .terminal-mac-dots {
+            display: flex;
+            gap: 8px;
+            margin-right: 12px;
+        }
+        .terminal-mac-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .terminal-mac-dot.red { background: #ff5f56; border: 1px solid #e0443e; }
+        .terminal-mac-dot.yellow { background: #ffbd2e; border: 1px solid #dea123; }
+        .terminal-mac-dot.green { background: #27c93f; border: 1px solid #13a10e; }
+        .terminal-mac-title {
+            color: #bdbdbd;
+            font-size: 1rem;
+            font-family: 'Roboto', sans-serif;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+            opacity: 0.7;
+            user-select: none;
+        }
+        .terminal-mac-body {
+            padding: 18px;
+            height: calc(100% - 38px);
+            overflow-y: auto;
+            font-size: 1.08rem;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        @media (max-width: 1100px) {
+            .container { max-width: 99vw; }
+            #terminal { max-width: 99vw; }
+            .slider { max-width: 99vw; }
+        }
+        @media (max-width: 700px) {
+            .slider { width: 99vw; min-width: 0; }
+            #terminal { font-size: 0.95rem; padding: 0; }
+            .terminal-mac-body { padding: 8px; }
+            .slider__buttons button { width: 98vw; min-width: 120px; }
+        }
+        /* --- Animation for nav --- */
+        @keyframes check {
+            50% {
+                outline-color: #333;
+                box-shadow: 0 0 0 12px #333, 0 0 0 36px rgba(51, 51, 51, 0.2);
+            }
+            100% {
+                outline-color: #333;
+                box-shadow: 0 0 0 0 #333, 0 0 0 0 rgba(51, 51, 51, 0);
+            }
+        }
+        /* Slider arrows */
+        .slider__arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: #fff;
+            color: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            border: none;
+            opacity: 0.93;
+            transition: opacity 0.2s, background 0.2s;
+            outline: none;
+        }
+        .slider__arrow:hover {
+            opacity: 1;
+            background: #e0e7ef;
+        }
+        .slider__arrow.left {
+            left: 18px;
+        }
+        .slider__arrow.right {
+            right: 18px;
+        }
+        /* Hide duplicated nav dots in button row */
+        .slider__navlabel {
+            display: flex;
+            justify-content: center;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 10px;
+            z-index: 11;
+        }
+        .slider__navlabel label {
+            width: 12px;
+            height: 12px;
+            margin: 0 12px;
+            border-radius: 50%;
+            background: #ccc;
+            cursor: pointer;
+            outline: 6px solid #ccc;
+            outline-offset: -6px;
+            box-shadow: 0 0 0 0 #333, 0 0 0 0 rgba(51, 51, 51, 0);
+            transition: background 0.2s;
+        }
+        /* Highlight active dot */
+        #slide1:checked ~ .slider__navlabel label[for="slide1"],
+        #slide2:checked ~ .slider__navlabel label[for="slide2"],
+        #slide3:checked ~ .slider__navlabel label[for="slide3"],
+        #slide4:checked ~ .slider__navlabel label[for="slide4"] {
+            background: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center">Threat Simulation</h2>
+        <!-- Fancy Custom Slider -->
+        <div class="slider" id="customSlider">
+            <input type="radio" name="slider" title="slide1" checked="checked" class="slider__nav" id="slide1"/>
+            <input type="radio" name="slider" title="slide2" class="slider__nav" id="slide2"/>
+            <input type="radio" name="slider" title="slide3" class="slider__nav" id="slide3"/>
+            <input type="radio" name="slider" title="slide4" class="slider__nav" id="slide4"/>
+            <button class="slider__arrow left" onclick="sliderPrev()" aria-label="Previous"><i class="fa fa-chevron-left"></i></button>
+            <button class="slider__arrow right" onclick="sliderNext()" aria-label="Next"><i class="fa fa-chevron-right"></i></button>
+            <div class="slider__inner">
+                <div class="slider__contents">
+                    <i class="slider__image fa fa-shield"></i>
+                    <div class="slider__caption">Server attacks</div>
+                    <div class="slider__txt">Execute brute force and Server related attacks.</div>
+                    <div class="slider__buttons">
+                        <button class="primary" onclick="runScript('Brute Force')">Brute Force</button>
+                        <button class="secondary" onclick="runScript('Add User')">Add User</button>
+                        <button class="secondary" onclick="runScript('Delete Logs')">Obfuscation </button>
+                    </div>
+                </div>
+                <div class="slider__contents">
+                    <i class="slider__image fa fa-envelope"></i>
+                    <div class="slider__caption">Email Attack</div>
+                    <div class="slider__txt">Test email-based threats and phishing simulations.</div>
+                    <div class="slider__buttons">
+                        <button class="primary" onclick="runScript('Email Attack')">Email Attack</button>
+                        <button class="secondary" onclick="runScript('Phishing Simulation')">Phishing Simulation</button>
+                        <button class="secondary" onclick="runScript('Email Accouttakeover')">Email Attack - ATO</button>
+                    </div>
+                </div>
+                <div class="slider__contents">
+                    <i class="slider__image fa fa-sitemap"></i>
+                    <div class="slider__caption">Network Protection</div>
+                    <div class="slider__txt">Network security and Network related threats.</div>
+                    <div class="slider__buttons">
+                        <button class="primary" onclick="runScript('Network Protection')">Network Protection</button>
+                        <button class="secondary" onclick="runScript('Firewall ATR')">Firewall ATR</button>
+                        <button class="secondary" onclick="runScript('Network Teeat')">Network Threat</button>
+                    </div>
+                </div>
+                <div class="slider__contents">
+                    <i class="slider__image fa fa-exclamation-triangle"></i>
+                    <div class="slider__caption">Endpoint Virus</div>
+                    <div class="slider__txt">Endpoint Security attacks.</div>
+                    <div class="slider__buttons">
+                        <button class="primary" onclick="runScript('Endpoint Virus')">Endpoint Virus</button>
+                        <button class="secondary" onclick="runScript('Endpoint Virus')">Ransomware ATR</button>
+                        <button class="secondary" onclick="runScript('EDR Killer')">EDR Killer</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!-- Terminal Output -->
+        <div id="terminal" class="mt-4">
+            <div class="terminal-mac-header">
+                <span class="terminal-mac-dots">
+                    <span class="terminal-mac-dot red"></span>
+                    <span class="terminal-mac-dot yellow"></span>
+                    <span class="terminal-mac-dot green"></span>
+                </span>
+                <span class="terminal-mac-title">Terminal</span>
+            </div>
+            <div class="terminal-mac-body" id="terminal-body"></div>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        function runScript(scriptName) {
+            const terminalBody = document.getElementById('terminal-body');
+            terminalBody.innerText = `Running script: ${scriptName}...\n`;
+            socket.emit('run_script', { script: scriptName });
+        }
+
+        socket.on('terminal_output', function(data) {
+            const terminalBody = document.getElementById('terminal-body');
+            terminalBody.innerText += data.output;
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+                // If Endpoint Virus script finished, open the malware test link
+        if (data.output.includes("Script 'Endpoint Virus' finished.")) {
+            window.open('https://csd-user-docs.s3.amazonaws.com/Endpoint+Protection/SKOUT-Malware-Test.exe', '_blank');
+    }
+        });
+
+        // Custom slider navigation
+        function sliderPrev() {
+            const radios = Array.from(document.querySelectorAll('.slider__nav'));
+            let idx = radios.findIndex(r => r.checked);
+            radios[(idx - 1 + radios.length) % radios.length].checked = true;
+        }
+        function sliderNext() {
+            const radios = Array.from(document.querySelectorAll('.slider__nav'));
+            let idx = radios.findIndex(r => r.checked);
+            radios[(idx + 1) % radios.length].checked = true;
+        }
+    </script>
+</body>
+</html>
