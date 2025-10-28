@@ -16,12 +16,11 @@ from email.utils import make_msgid
 # List of recipients (name, email address)
 RECIPIENTS = [
 #    ('Albra Welch', 'aw@pmcuda.com')
-#
-   ('Avery Kim', 'akim@barracudademo.com'),
-   ('Jordan Reyes', 'jreyes@barracudademo.com'),
-   ('Morgan Patel', 'mpatel@barracudademo.com'),
-   ('Riley Chen', 'rchen@barracudademo.com'),
-   ('Taylor Alvarez', 'talvarez@barracudademo.com')
+#   ('Avery Kim', 'akim@barracudademo.com'),
+    ('Jordan Reyes', 'jreyes@barracudademo.com'),
+    ('Morgan Patel', 'mpatel@barracudademo.com'),
+    ('Riley Chen', 'rchen@barracudademo.com'),
+    ('Taylor Alvarez', 'talvarez@barracudademo.com')
    ]
 
 # Configuration pmcuda.com
@@ -180,10 +179,10 @@ def main():
 
             # Check if we need to pause after batch
             if email_counter % EMAILS_PER_BATCH == 0:
-                print(f"\nPausing for {PAUSE_DURATION} seconds...")
-                time.sleep(PAUSE_DURATION)
+                print(f"\nScript execution done - bye, buy...")
             else:
                 time.sleep(DELAY_BETWEEN_EMAILS)
+
 
     except KeyboardInterrupt:
         print("\nScript terminated by user.")
@@ -195,6 +194,9 @@ def main():
         print(f"An unexpected error occurred: {str(e)}")
         import traceback
         traceback.print_exc()
+    finally:
+        print(f"\nEmail blast completed. Total emails sent: {email_counter}")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
