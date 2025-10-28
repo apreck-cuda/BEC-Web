@@ -1,9 +1,5 @@
 #!/bin/bash
 
-HOST="172.16.0.5"
-TARGET_URL="https://128.31.0.39"
-USER="user"
-PASS="password"
 
 echo 'Executing network-based threat...'
 sleep 1
